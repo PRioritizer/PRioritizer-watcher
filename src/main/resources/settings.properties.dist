@@ -1,0 +1,10 @@
+rabbitmq.host=
+rabbitmq.username=
+rabbitmq.password=
+rabbitmq.queue=
+
+mongodb.host=
+mongodb.username=
+mongodb.password=
+mongodb.database=
+mongodb.collection=
