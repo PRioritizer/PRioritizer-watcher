@@ -3,8 +3,8 @@ package queue
 import com.rabbitmq.client.{Channel, Connection, ConnectionFactory, QueueingConsumer}
 
 class PullRequestQueue(host: String, username: String, password: String, queue: String) {
-  var connection: Connection = _
-  var channel: Channel = _
+  private var connection: Connection = _
+  private var channel: Channel = _
 
   def open(): Unit = {
     val factory = new ConnectionFactory
