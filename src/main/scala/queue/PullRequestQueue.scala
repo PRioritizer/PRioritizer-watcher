@@ -19,7 +19,7 @@ class PullRequestQueue(host: String, username: String, password: String, queue: 
       throw new Exception("No connection")
 
     channel = connection.createChannel
-    channel.queueBind(queue, "", "")
+    channel.queueDeclare(queue, true, false, false, null)
     val consumer = new QueueingConsumer(channel)
     channel.basicConsume(queue, false, consumer)
     channel.basicQos(1)
@@ -33,10 +33,10 @@ class PullRequestQueue(host: String, username: String, password: String, queue: 
   }
 
   def close(): Unit = {
-    if (channel != null)
+    if (channel != null && channel.isOpen)
       channel.close()
 
-    if (connection != null)
+    if (connection != null && connection.isOpen)
       connection.close()
   }
 }

@@ -10,11 +10,13 @@ object Watcher {
     val queue = new PullRequestQueue(host, username, password, queueName)
     queue.open()
 
-    queue listen { id =>
-      println(s"> Event id: $id")
+    try {
+      queue listen { id =>
+        println(s"> Event id: $id")
+      }
+    } finally {
+      println("exit")
+      queue.close()
     }
-
-    println("exit")
-    queue.close()
   }
 }
