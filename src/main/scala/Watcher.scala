@@ -2,12 +2,12 @@ import queue.PullRequestQueue
 
 object Watcher {
   def main(args: Array[String]): Unit = {
-    val host = Settings.get("rabbitmq.host").get
-    val username = Settings.get("rabbitmq.username").get
-    val password = Settings.get("rabbitmq.password").get
-    val queueName = Settings.get("rabbitmq.queue").get
+    val queue = new PullRequestQueue(
+      RabbitMQSettings.host,
+      RabbitMQSettings.username,
+      RabbitMQSettings.password,
+      RabbitMQSettings.queue)
 
-    val queue = new PullRequestQueue(host, username, password, queueName)
     queue.open()
 
     try {
@@ -19,4 +19,11 @@ object Watcher {
       queue.close()
     }
   }
+}
+
+object RabbitMQSettings {
+  lazy val host = Settings.get("rabbitmq.host").getOrElse("localhost")
+  lazy val username = Settings.get("rabbitmq.username").getOrElse("")
+  lazy val password = Settings.get("rabbitmq.password").getOrElse("")
+  lazy val queue = Settings.get("rabbitmq.queue").getOrElse("")
 }
