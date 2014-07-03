@@ -1,19 +1,19 @@
-import events.EventDatabase
-import queue.PullRequestQueue
-import settings.{TaskSettings, MongoDBSettings, RabbitMQSettings, Settings}
-import task.TaskRunner
+import events.{MongoDatabase, EventDatabase}
+import queue.{RabbitMQ, PullRequestQueue}
+import settings.{TaskSettings, MongoDBSettings, RabbitMQSettings}
+import task.{CommandLineRunner, TaskRunner}
 import scala.util.{Failure, Success}
 
 object Watcher {
 
   def main(args: Array[String]): Unit = {
-    val queue = new PullRequestQueue(
+    val queue = new RabbitMQ(
       RabbitMQSettings.host,
       RabbitMQSettings.username,
       RabbitMQSettings.password,
       RabbitMQSettings.queue)
 
-    val database = new EventDatabase(
+    val database = new MongoDatabase(
       MongoDBSettings.host,
       MongoDBSettings.port,
       MongoDBSettings.username,
@@ -21,7 +21,7 @@ object Watcher {
       MongoDBSettings.database,
       MongoDBSettings.collection)
 
-    val runner = new TaskRunner(
+    val runner = new CommandLineRunner(
       TaskSettings.repositories,
       TaskSettings.command
     )
