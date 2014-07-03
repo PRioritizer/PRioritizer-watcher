@@ -1,5 +1,6 @@
 package queue
 
+import com.rabbitmq.client.QueueingConsumer.Delivery
 import com.rabbitmq.client.{Channel, Connection, ConnectionFactory, QueueingConsumer}
 
 class PullRequestQueue(host: String, username: String, password: String, queue: String) {
@@ -14,7 +15,7 @@ class PullRequestQueue(host: String, username: String, password: String, queue: 
     connection = factory.newConnection
   }
 
-  def listen(action: (String => Unit)): Unit = {
+  def listen(action: (String => Boolean)): Unit = {
     if (connection == null)
       throw new Exception("No connection")
 
@@ -28,8 +29,18 @@ class PullRequestQueue(host: String, username: String, password: String, queue: 
       // Wait for next message
       val delivery = consumer.nextDelivery()
       val eventId = new String(delivery.getBody)
-      action(eventId)
+      val result = action(eventId)
+      acknowledge(delivery, result)
     }
+  }
+
+  private def acknowledge(delivery: Delivery, positive: Boolean): Unit = {
+    val acknowledgeMultiple = false
+    val requeueMessage = false
+    if (positive)
+      channel.basicAck(delivery.getEnvelope.getDeliveryTag, acknowledgeMultiple)
+    else
+      channel.basicNack(delivery.getEnvelope.getDeliveryTag, acknowledgeMultiple, requeueMessage)
   }
 
   def close(): Unit = {

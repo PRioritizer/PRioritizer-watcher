@@ -40,13 +40,12 @@ object Watcher {
 
         database.getPullRequest(eventId) match {
           case Success(pullReq) =>
-            print(s" base: ${pullReq.base.owner}/${pullReq.base.repository}")
-            println(s" head: ${pullReq.head.owner}/${pullReq.head.repository}")
+            println(s" repo: ${pullReq.base.owner}/${pullReq.base.repository}")
             val result = runner.run(pullReq)
-          //            channel.basicAck(delivery.getEnvelope.getDeliveryTag, false)
+            result
           case Failure(e) =>
             println(s" Error - ${e.getMessage}")
-          //            channel.basicNack(delivery.getEnvelope.getDeliveryTag, false, true)
+            false
         }
       }
     } finally {
