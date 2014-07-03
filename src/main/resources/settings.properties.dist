@@ -4,6 +4,7 @@ rabbitmq.password=
 rabbitmq.queue=
 
 mongodb.host=
+mongodb.port=
 mongodb.username=
 mongodb.password=
 mongodb.database=
