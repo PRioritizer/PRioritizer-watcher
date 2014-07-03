@@ -10,9 +10,13 @@ class EventDatabase(host: String, port: Int, username: String, password: String,
   private var collection: DBCollection = _
 
   def open(): Unit = {
-    val credential = MongoCredential.createMongoCRCredential(username, databaseName, password.toCharArray)
     val server = new ServerAddress(host, port)
-    client = new MongoClient(server, java.util.Arrays.asList(credential))
+    client = if (username != null && username.nonEmpty) {
+      val credential = MongoCredential.createMongoCRCredential(username, databaseName, password.toCharArray)
+      new MongoClient(server, java.util.Arrays.asList(credential))
+    } else {
+      new MongoClient(server)
+    }
     database = client.getDB(databaseName)
     collection = database.getCollection(collectionName)
   }
