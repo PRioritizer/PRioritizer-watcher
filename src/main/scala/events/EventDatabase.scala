@@ -45,8 +45,8 @@ class EventDatabase(host: String, port: Int, username: String, password: String,
       val base_repo_owner_login = getField(result, "payload.pull_request.base.repo.owner.login")
 
       PullRequest(
-        Head(head_label, head_sha, head_repo_name, head_repo_owner_login),
-        Base(base_label, base_sha, base_repo_name, base_repo_owner_login)
+        Head(head_label, head_sha, head_repo_owner_login, head_repo_name),
+        Base(base_label, base_sha, base_repo_owner_login, base_repo_name)
       )
     }
   }
