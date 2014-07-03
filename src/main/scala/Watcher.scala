@@ -1,9 +1,11 @@
 import events.EventDatabase
 import queue.PullRequestQueue
+import settings.{TaskSettings, MongoDBSettings, RabbitMQSettings, Settings}
 import task.TaskRunner
 import scala.util.{Failure, Success}
 
 object Watcher {
+
   def main(args: Array[String]): Unit = {
     val queue = new PullRequestQueue(
       RabbitMQSettings.host,
@@ -24,6 +26,11 @@ object Watcher {
       TaskSettings.command
     )
 
+    watch(queue, database, runner)
+    println("Bye")
+  }
+
+  def watch(queue: PullRequestQueue, database: EventDatabase, runner: TaskRunner): Unit = {
     try {
       queue.open()
       database.open()
@@ -43,29 +50,7 @@ object Watcher {
         }
       }
     } finally {
-      println("exit")
       queue.close()
     }
   }
-}
-
-object RabbitMQSettings {
-  lazy val host = Settings.get("rabbitmq.host").getOrElse("localhost")
-  lazy val username = Settings.get("rabbitmq.username").getOrElse("")
-  lazy val password = Settings.get("rabbitmq.password").getOrElse("")
-  lazy val queue = Settings.get("rabbitmq.queue").getOrElse("")
-}
-
-object MongoDBSettings {
-  lazy val host = Settings.get("mongodb.host").getOrElse("localhost")
-  lazy val port = Settings.get("mongodb.port").fold(27017)(p => p.toInt)
-  lazy val username = Settings.get("mongodb.username").getOrElse("")
-  lazy val password = Settings.get("mongodb.password").getOrElse("")
-  lazy val database = Settings.get("mongodb.database").getOrElse("")
-  lazy val collection = Settings.get("mongodb.collection").getOrElse("")
-}
-
-object TaskSettings {
-  lazy val repositories = Settings.get("prioritizer.repositories").getOrElse("")
-  lazy val command = Settings.get("prioritizer.command").getOrElse("")
 }
