@@ -1,6 +1,6 @@
 import events.EventDatabase
 import queue.PullRequestQueue
-
+import task.TaskRunner
 import scala.util.{Failure, Success}
 
 object Watcher {
@@ -19,6 +19,11 @@ object Watcher {
       MongoDBSettings.database,
       MongoDBSettings.collection)
 
+    val runner = new TaskRunner(
+      TaskSettings.repositories,
+      TaskSettings.command
+    )
+
     try {
       queue.open()
       database.open()
@@ -28,8 +33,9 @@ object Watcher {
 
         database.getPullRequest(eventId) match {
           case Success(pullReq) =>
-            print(s" base: ${pullReq.base.owner}/${pullReq.base.repo}")
-            println(s" head: ${pullReq.head.owner}/${pullReq.head.repo}")
+            print(s" base: ${pullReq.base.owner}/${pullReq.base.repository}")
+            println(s" head: ${pullReq.head.owner}/${pullReq.head.repository}")
+            val result = runner.run(pullReq)
           //            channel.basicAck(delivery.getEnvelope.getDeliveryTag, false)
           case Failure(e) =>
             println(s" Error - ${e.getMessage}")
@@ -57,4 +63,9 @@ object MongoDBSettings {
   lazy val password = Settings.get("mongodb.password").getOrElse("")
   lazy val database = Settings.get("mongodb.database").getOrElse("")
   lazy val collection = Settings.get("mongodb.collection").getOrElse("")
+}
+
+object TaskSettings {
+  lazy val repositories = Settings.get("prioritizer.repositories").getOrElse("")
+  lazy val command = Settings.get("prioritizer.command").getOrElse("")
 }
