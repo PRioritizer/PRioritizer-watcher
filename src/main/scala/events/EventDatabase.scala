@@ -57,14 +57,15 @@ class EventDatabase(host: String, port: Int, username: String, password: String,
     }
   }
 
-  private def getField(obj: DBObject, path: String): String = {
+  private def getField(obj: DBObject, fullPath: String): String = {
     def iter(x: AnyRef, path: Array[String]): String = {
       x match {
         case o: DBObject => iter(o.get(path.head), path.tail)
         case s: String => s
+        case _ => throw new NoSuchElementException(s"Unknown field $fullPath")
       }
     }
-    iter(obj, path.split("""\."""))
+    iter(obj, fullPath.split("""\."""))
   }
 
   def close(): Unit = {
