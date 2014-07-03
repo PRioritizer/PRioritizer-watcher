@@ -1,5 +1,6 @@
 package task
 
+import java.io.File
 import pullrequest.PullRequest
 import sys.process._
 
@@ -18,9 +19,11 @@ class CommandLineRunner(repositories: String, command: String) extends TaskRunne
 
   private def parseCommand(pullRequest: PullRequest): String = {
     val base = pullRequest.base
+    val path = new File(new File(repositories, base.owner), base.repository).getAbsolutePath
+
     command
       .replace("$owner", base.owner)
       .replace("$repository", base.repository)
-      .replace("$dir", repositories)
+      .replace("$dir", path)
   }
 }
