@@ -17,6 +17,8 @@ class EventDatabase(host: String, port: Int, username: String, password: String,
     } else {
       new MongoClient(server)
     }
+    
+    client.setReadPreference(ReadPreference.secondaryPreferred())
     database = client.getDB(databaseName)
     collection = database.getCollection(collectionName)
   }
