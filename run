@@ -1,0 +1,15 @@
+#!/bin/bash
+
+NAME="watcher"
+VERSION="1.0"
+SCALA_VERSION="2.11"
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+JAR="$DIR/target/scala-$SCALA_VERSION/$NAME-assembly-$VERSION.jar"
+
+if ! [ -f "$JAR" ]; then
+  echo "JAR file does not exist." >&2
+  echo "Make sure you run \`sbt assembly\` to build the JAR executable." >&2
+  exit 1
+fi
+
+java -jar $JAR
