@@ -1,10 +1,12 @@
 import events.{MongoDatabase, EventDatabase}
+import org.slf4j.LoggerFactory
 import queue.{RabbitMQ, PullRequestQueue}
 import settings.{TaskSettings, MongoDBSettings, RabbitMQSettings}
 import task.{CommandLineRunner, TaskRunner}
 import scala.util.{Failure, Success}
 
 object Watcher {
+  val logger = LoggerFactory.getLogger("Watcher")
 
   def main(args: Array[String]): Unit = {
     val queue = new RabbitMQ(
@@ -36,17 +38,25 @@ object Watcher {
       database.open()
 
       queue listen { eventId =>
-        print(s"> Event id: $eventId")
+        logger info s"New event - ID: $eventId"
 
         database.getPullRequest(eventId) match {
-          case Success(pullReq) =>
-            println(s" repo: ${pullReq.base.owner}/${pullReq.base.repository}")
-            println("Prioritizing...")
-            val (result, output) = runner.run(pullReq)
-            println(output)
+          case Success(pr) =>
+            logger info s"Database lookup - Repository: ${pr.base.owner}/${pr.base.repository}"
+            logger info s"Prioritizing - Start process"
+            val (result, output) = runner.run(pr)
+            if (result)
+              logger info s"Prioritizing - Process completed"
+            else
+              logger error s"Prioritizing - Process completed with errors"
+            logger info s"Output - Begin\n${output.trim}"
+            logger info s"Output - End"
             result
           case Failure(e) =>
-            println(s" Error - ${e.getMessage}")
+            val stackTrace = e.getStackTrace.mkString("", "\n", "").trim
+            logger error s"Prioritizing - Error: ${e.getMessage}"
+            logger error s"Stack trace - Begin\n$stackTrace"
+            logger error s"Stack trace - End"
             false
         }
       }

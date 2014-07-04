@@ -7,13 +7,11 @@ import sys.process._
 class CommandLineRunner(repositories: String, command: String) extends TaskRunner {
   def runWithExitCode(pullRequest: PullRequest): Boolean = {
     val taskCommand = parseCommand(pullRequest)
-    println(s"Executing: $taskCommand")
     taskCommand.! == 0
   }
 
   def runWithOutput(pullRequest: PullRequest): String = {
     val taskCommand = parseCommand(pullRequest)
-    println(s"Executing: $taskCommand")
     taskCommand.!!
   }
 
