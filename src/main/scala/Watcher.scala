@@ -4,6 +4,7 @@ import queue.{RabbitMQ, PullRequestQueue}
 import settings.{TaskSettings, MongoDBSettings, RabbitMQSettings}
 import task.{CommandLineRunner, TaskRunner}
 import scala.util.{Failure, Success}
+import utils.Extensions._
 
 object Watcher {
   val logger = LoggerFactory.getLogger("Watcher")
@@ -53,9 +54,8 @@ object Watcher {
             logger info s"Output - End"
             result
           case Failure(e) =>
-            val stackTrace = e.getStackTrace.mkString("", "\n", "").trim
-            logger error s"Prioritizing - Error: ${e.getMessage}"
-            logger error s"Stack trace - Begin\n$stackTrace"
+            logger error s"Database lookup - Error: ${e.getMessage}"
+            logger error s"Stack trace - Begin\n${e.stackTraceToString}"
             logger error s"Stack trace - End"
             false
         }
