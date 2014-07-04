@@ -2,16 +2,10 @@ import pullrequest.PullRequest
 import task.TaskRunner
 
 class TestRunner(command: String) extends TaskRunner {
-  def run(pullRequest: PullRequest): Boolean = {
+  def run(pullRequest: PullRequest): (Boolean, String) = {
     val taskCommand = parseCommand(pullRequest)
     println(s"Executing: $taskCommand")
-    true
-  }
-
-  def runWithOutput(pullRequest: PullRequest): String = {
-    val taskCommand = parseCommand(pullRequest)
-    println(s"Executing: $taskCommand")
-    "Output"
+    (true, "<output>")
   }
 
   private def parseCommand(pullRequest: PullRequest): String = {

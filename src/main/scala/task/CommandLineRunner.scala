@@ -1,11 +1,11 @@
 package task
 
-import java.io.File
+import java.io.{PrintWriter, ByteArrayOutputStream, File}
 import pullrequest.PullRequest
 import sys.process._
 
 class CommandLineRunner(repositories: String, command: String) extends TaskRunner {
-  def run(pullRequest: PullRequest): Boolean = {
+  def runWithExitCode(pullRequest: PullRequest): Boolean = {
     val taskCommand = parseCommand(pullRequest)
     println(s"Executing: $taskCommand")
     taskCommand.! == 0
@@ -15,6 +15,18 @@ class CommandLineRunner(repositories: String, command: String) extends TaskRunne
     val taskCommand = parseCommand(pullRequest)
     println(s"Executing: $taskCommand")
     taskCommand.!!
+  }
+
+  def run(pullRequest: PullRequest): (Boolean, String) = {
+    val stdout = new ByteArrayOutputStream
+    val stderr = new ByteArrayOutputStream
+    val stdoutWriter = new PrintWriter(stdout)
+    val stderrWriter = new PrintWriter(stderr)
+    val taskCommand = parseCommand(pullRequest)
+    val exitValue = taskCommand.!(ProcessLogger(stdoutWriter.println, stderrWriter.println))
+    stdoutWriter.close()
+    stderrWriter.close()
+    (exitValue == 0, stdout.toString)
   }
 
   private def parseCommand(pullRequest: PullRequest): String = {

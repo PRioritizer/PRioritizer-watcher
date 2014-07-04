@@ -41,7 +41,9 @@ object Watcher {
         database.getPullRequest(eventId) match {
           case Success(pullReq) =>
             println(s" repo: ${pullReq.base.owner}/${pullReq.base.repository}")
-            val result = runner.run(pullReq)
+            println("Prioritizing...")
+            val (result, output) = runner.run(pullReq)
+            println(output)
             result
           case Failure(e) =>
             println(s" Error - ${e.getMessage}")
