@@ -1,3 +1,5 @@
+import java.io.PrintWriter
+
 import events.{MongoDatabase, EventDatabase}
 import org.slf4j.LoggerFactory
 import queue.{RabbitMQ, PullRequestQueue}
@@ -26,7 +28,8 @@ object Watcher {
 
     val runner = new CommandLineRunner(
       TaskSettings.repositories,
-      TaskSettings.command
+      TaskSettings.command,
+      new PrintWriter(System.out, true)
     )
 
     watch(queue, database, runner)
@@ -48,16 +51,14 @@ object Watcher {
 
             if (canRun) {
               logger info s"Prioritizing - Start process"
-              val (result, output) = runner.run(pr)
+              val result = runner.run(pr)
               if (result)
                 logger info s"Prioritizing - Process completed"
               else
                 logger error s"Prioritizing - Process completed with errors"
-              logger info s"Output - Begin\n${output.trim}"
-              logger info s"Output - End"
               result
             } else {
-              logger warn s"Cannot start process: $message"
+              logger warn s"Skip - $message"
               false
             }
           case Failure(e) =>

@@ -4,18 +4,8 @@ import java.io.{PrintWriter, ByteArrayOutputStream, File}
 import pullrequest.{Base, PullRequest}
 import sys.process._
 
-class CommandLineRunner(repositories: String, command: String) extends TaskRunner {
-  def runWithExitCode(pullRequest: PullRequest): Boolean = {
-    val taskCommand = parseCommand(pullRequest)
-    taskCommand.! == 0
-  }
-
-  def runWithOutput(pullRequest: PullRequest): String = {
-    val taskCommand = parseCommand(pullRequest)
-    taskCommand.!!
-  }
-
-  def run(pullRequest: PullRequest): (Boolean, String) = {
+class CommandLineRunner(repositories: String, command: String, output: PrintWriter) extends TaskRunner {
+  def runWithOutput(pullRequest: PullRequest): (Boolean, String, String) = {
     val stdout = new ByteArrayOutputStream
     val stderr = new ByteArrayOutputStream
     val stdoutWriter = new PrintWriter(stdout)
@@ -24,7 +14,14 @@ class CommandLineRunner(repositories: String, command: String) extends TaskRunne
     val exitValue = taskCommand.!(ProcessLogger(stdoutWriter.println, stderrWriter.println))
     stdoutWriter.close()
     stderrWriter.close()
-    (exitValue == 0, stdout.toString)
+    (exitValue == 0, stdout.toString, stderr.toString)
+  }
+
+  def run(pullRequest: PullRequest): Boolean = {
+    val logger: (String => Unit) = if (output != null) output.println else (s: String) => ()
+    val taskCommand = parseCommand(pullRequest)
+    val exitValue = taskCommand.!(ProcessLogger(logger, (s: String) => ()))
+    exitValue == 0
   }
 
   def canRun(pullRequest: PullRequest): (Boolean, String) = {
