@@ -8,6 +8,10 @@ class TestRunner(command: String) extends TaskRunner {
     (true, "<output>")
   }
 
+  def canRun(pullRequest: PullRequest): (Boolean, String) = {
+    (true, "<message>")
+  }
+
   private def parseCommand(pullRequest: PullRequest): String = {
     val base = pullRequest.base
     command

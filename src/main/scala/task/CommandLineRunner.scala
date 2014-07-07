@@ -1,7 +1,7 @@
 package task
 
 import java.io.{PrintWriter, ByteArrayOutputStream, File}
-import pullrequest.PullRequest
+import pullrequest.{Base, PullRequest}
 import sys.process._
 
 class CommandLineRunner(repositories: String, command: String) extends TaskRunner {
@@ -27,13 +27,27 @@ class CommandLineRunner(repositories: String, command: String) extends TaskRunne
     (exitValue == 0, stdout.toString)
   }
 
+  def canRun(pullRequest: PullRequest): (Boolean, String) = {
+    val base = pullRequest.base
+    val repoFile = getRepoFile(base)
+
+    if (repoFile.exists)
+      (true, "")
+    else
+      (false, "Repository directory does not exist")
+  }
+
   private def parseCommand(pullRequest: PullRequest): String = {
     val base = pullRequest.base
-    val path = new File(new File(repositories, base.owner), base.repository).getAbsolutePath
+    val path = getRepoFile(base).getAbsolutePath
 
     command
       .replace("$owner", base.owner)
       .replace("$repository", base.repository)
       .replace("$dir", path)
   }
+
+  private def getRepoFile(base: Base) =
+    new File(new File(repositories, base.owner), base.repository)
+
 }

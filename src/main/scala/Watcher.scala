@@ -43,16 +43,23 @@ object Watcher {
 
         database.getPullRequest(eventId) match {
           case Success(pr) =>
+            val (canRun, message) = runner.canRun(pr)
             logger info s"Database lookup - Repository: ${pr.base.owner}/${pr.base.repository}"
-            logger info s"Prioritizing - Start process"
-            val (result, output) = runner.run(pr)
-            if (result)
-              logger info s"Prioritizing - Process completed"
-            else
-              logger error s"Prioritizing - Process completed with errors"
-            logger info s"Output - Begin\n${output.trim}"
-            logger info s"Output - End"
-            result
+
+            if (canRun) {
+              logger info s"Prioritizing - Start process"
+              val (result, output) = runner.run(pr)
+              if (result)
+                logger info s"Prioritizing - Process completed"
+              else
+                logger error s"Prioritizing - Process completed with errors"
+              logger info s"Output - Begin\n${output.trim}"
+              logger info s"Output - End"
+              result
+            } else {
+              logger warn s"Cannot start process: $message"
+              false
+            }
           case Failure(e) =>
             logger error s"Database lookup - Error: ${e.getMessage}"
             logger error s"Stack trace - Begin\n${e.stackTraceToString}"
