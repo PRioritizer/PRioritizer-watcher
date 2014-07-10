@@ -42,8 +42,8 @@ class MongoDatabase(host: String, port: Int, username: String, password: String,
 
       val head_label = getField(result, "payload.pull_request.head.label")
       val head_sha = getField(result, "payload.pull_request.head.sha")
-      val head_repo_name = getField(result, "payload.pull_request.head.repo.name")
-      val head_repo_owner_login = getField(result, "payload.pull_request.head.repo.owner.login")
+      val head_repo_name = getField(result, "payload.pull_request.head.repo.name", "Unknown")
+      val head_repo_owner_login = getField(result, "payload.pull_request.head.repo.owner.login", "Unknown")
 
       val base_label = getField(result, "payload.pull_request.base.label")
       val base_sha = getField(result, "payload.pull_request.base.sha")
@@ -57,11 +57,12 @@ class MongoDatabase(host: String, port: Int, username: String, password: String,
     }
   }
 
-  private def getField(obj: DBObject, fullPath: String): String = {
+  private def getField(obj: DBObject, fullPath: String, defaultValue: String = null): String = {
     def iter(x: AnyRef, path: Array[String]): String = {
       x match {
         case o: DBObject => iter(o.get(path.head), path.tail)
         case s: String => s
+        case _ if defaultValue != null => defaultValue
         case _ => throw new NoSuchElementException(s"Unknown field $fullPath")
       }
     }
