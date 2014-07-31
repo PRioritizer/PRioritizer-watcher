@@ -1,13 +1,19 @@
-import queue.PullRequestQueue
+import queue.{Message, PullRequestQueue}
 
 class TestQueue extends PullRequestQueue {
   def open(): Unit = {}
 
-  def listen(action: (String => Boolean)): Unit = {
-    val list = List(1,2,3,4,5)
+  def listen(action: (Message => Unit)): Unit = {
+    val list = List(
+      TestMessage("1"),
+      TestMessage("2"),
+      TestMessage("3"),
+      TestMessage("4"),
+      TestMessage("5")
+    )
 
-    list.foreach { eventId =>
-      action(s"$eventId")
+    list.foreach { message =>
+      action(message)
     }
   }
 
