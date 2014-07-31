@@ -3,18 +3,16 @@ import queue.{Message, PullRequestQueue}
 class TestQueue extends PullRequestQueue {
   def open(): Unit = {}
 
-  def listen(action: (Message => Unit)): Unit = {
+  def stream: Stream[Message] = {
     val list = List(
-      TestMessage("1"),
-      TestMessage("2"),
-      TestMessage("3"),
-      TestMessage("4"),
-      TestMessage("5")
+      Message("1"),
+      Message("2"),
+      Message("3"),
+      Message("4"),
+      Message("5")
     )
 
-    list.foreach { message =>
-      action(message)
-    }
+    list.toStream
   }
 
   def close(): Unit = {}

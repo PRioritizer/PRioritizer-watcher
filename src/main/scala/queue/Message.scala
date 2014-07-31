@@ -1,6 +1,3 @@
 package queue
 
-trait Message {
-  def contents: String
-  def acknowledge(success: Boolean = true)
-}
+case class Message(contents: String)

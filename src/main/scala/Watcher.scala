@@ -41,36 +41,30 @@ object Watcher {
       queue.open()
       database.open()
 
-      queue listen { message =>
-        val eventId = message.contents
-        logger info s"New event - ID: $eventId"
-
-        database.getPullRequest(eventId) match {
-          case Success(pr) =>
+      queue.stream
+      .map { m =>
+        logger info s"New event - ID: ${m.contents}"
+        database.getPullRequest(m.contents)
+      }
+      .foreach {
+        case Success(pr) =>
             logger info s"Database lookup - Repository: ${pr.base.owner}/${pr.base.repository}"
 
             val (canRun, log) = runner.canRun(pr)
-            if (!canRun) {
-              logger warn s"Skip - $log"
-              message.acknowledge(success = false)
-            }
+            if (!canRun) logger warn s"Skip - $log"
 
             logger info s"Prioritizing - Start process"
             val result = runner.run(pr)
-            if (result)
-              logger info s"Prioritizing - Process completed"
-            else
-              logger error s"Prioritizing - Process completed with errors"
-            result
+            if (result) logger info s"Prioritizing - Process completed"
+            else logger error s"Prioritizing - Process completed with errors"
 
           case Failure(e) =>
             logger error s"Database lookup - Error: ${e.getMessage}"
             logger error s"Stack trace - Begin\n${e.stackTraceToString}"
             logger error s"Stack trace - End"
-            message.acknowledge(success = false)
-        }
       }
     } finally {
+      database.close()
       queue.close()
     }
   }

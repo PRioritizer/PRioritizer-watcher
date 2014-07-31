@@ -1,10 +1,12 @@
 package queue
 
+import com.rabbitmq.client.QueueingConsumer.Delivery
 import com.rabbitmq.client.{Channel, Connection, ConnectionFactory, QueueingConsumer}
 
 class RabbitMQ(host: String, username: String, password: String, queue: String) extends PullRequestQueue {
   private var connection: Connection = _
   private var channel: Channel = _
+  private var _stream: Stream[Message] = _
 
   def open(): Unit = {
     val factory = new ConnectionFactory
@@ -14,23 +16,12 @@ class RabbitMQ(host: String, username: String, password: String, queue: String) 
     connection = factory.newConnection
   }
 
-  def listen(action: (Message => Unit)): Unit = {
-    if (connection == null)
-      throw new Exception("No connection")
-
-    channel = connection.createChannel
-    channel.queueDeclare(queue, true, false, false, null)
-    val consumer = new QueueingConsumer(channel)
-    channel.basicConsume(queue, false, consumer)
-    channel.basicQos(1)
-
-    while (true) {
-      // Wait for next message
-      val delivery = consumer.nextDelivery()
-      val eventId = new String(delivery.getBody)
-      val message = new RabbitMessage(eventId, channel, delivery)
-      val result = action(message)
+  def stream: Stream[Message] = {
+    if (_stream == null) {
+      val consumer = listen
+      _stream = Stream.continually(wait(consumer))
     }
+    _stream
   }
 
   def close(): Unit = {
@@ -39,5 +30,34 @@ class RabbitMQ(host: String, username: String, password: String, queue: String) 
 
     if (connection != null && connection.isOpen)
       connection.close()
+  }
+
+  private def listen: QueueingConsumer = {
+    if (connection == null)
+      throw new Exception("No connection")
+
+    channel = connection.createChannel
+    channel.queueDeclare(queue, true, false, false, null)
+    val consumer = new QueueingConsumer(channel)
+    channel.basicConsume(queue, false, consumer)
+    channel.basicQos(1)
+    consumer
+  }
+
+  private def wait(consumer: QueueingConsumer): Message = {
+    // Wait for next message
+    val delivery = consumer.nextDelivery()
+    val eventId = new String(delivery.getBody)
+    acknowledge(delivery)
+    Message(eventId)
+  }
+
+  def acknowledge(delivery: Delivery, success: Boolean = true): Unit = {
+    val acknowledgeMultiple = false
+    val requeueMessage = false
+    if (success)
+      channel.basicAck(delivery.getEnvelope.getDeliveryTag, acknowledgeMultiple)
+    else
+      channel.basicNack(delivery.getEnvelope.getDeliveryTag, acknowledgeMultiple, requeueMessage)
   }
 }

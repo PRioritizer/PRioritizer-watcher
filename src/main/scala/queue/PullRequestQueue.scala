@@ -2,6 +2,6 @@ package queue
 
 trait PullRequestQueue {
   def open(): Unit
-  def listen(action: (Message => Unit)): Unit
+  def stream: Stream[Message]
   def close(): Unit
 }
