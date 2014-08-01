@@ -47,21 +47,23 @@ object Watcher {
         database.getPullRequest(m.contents)
       }
       .foreach {
+        case Success(pr) if !runner.canRun(pr) =>
+          val (_, log) = runner.canRunInfo(pr)
+          logger info s"Database lookup - Repository: ${pr.base.owner}/${pr.base.repository}"
+          logger warn s"Skip - $log"
+
         case Success(pr) =>
-            logger info s"Database lookup - Repository: ${pr.base.owner}/${pr.base.repository}"
+          logger info s"Database lookup - Repository: ${pr.base.owner}/${pr.base.repository}"
 
-            val (canRun, log) = runner.canRun(pr)
-            if (!canRun) logger warn s"Skip - $log"
+          logger info s"Prioritizing - Start process"
+          val result = runner.run(pr)
+          if (result) logger info s"Prioritizing - Process completed"
+          else logger error s"Prioritizing - Process completed with errors"
 
-            logger info s"Prioritizing - Start process"
-            val result = runner.run(pr)
-            if (result) logger info s"Prioritizing - Process completed"
-            else logger error s"Prioritizing - Process completed with errors"
-
-          case Failure(e) =>
-            logger error s"Database lookup - Error: ${e.getMessage}"
-            logger error s"Stack trace - Begin\n${e.stackTraceToString}"
-            logger error s"Stack trace - End"
+        case Failure(e) =>
+          logger error s"Database lookup - Error: ${e.getMessage}"
+          logger error s"Stack trace - Begin\n${e.stackTraceToString}"
+          logger error s"Stack trace - End"
       }
     } finally {
       database.close()

@@ -8,7 +8,7 @@ class TestRunner(command: String) extends TaskRunner {
     true
   }
 
-  def canRun(pullRequest: PullRequest): (Boolean, String) = {
+  def canRunInfo(pullRequest: PullRequest): (Boolean, String) = {
     (true, "<message>")
   }
 

@@ -24,7 +24,7 @@ class CommandLineRunner(repositories: String, command: String, output: PrintWrit
     exitValue == 0
   }
 
-  def canRun(pullRequest: PullRequest): (Boolean, String) = {
+  def canRunInfo(pullRequest: PullRequest): (Boolean, String) = {
     val base = pullRequest.base
     val repoFile = getRepoFile(base)
 
