@@ -48,14 +48,14 @@ object Watcher {
         database.getPullRequest(m.contents)
       }
       .foreach {
-        case Success(Event(t,pr)) if !runner.canRun(pr) =>
+        case Success(Event(action, pr)) if !runner.canRun(pr) =>
           val (_, log) = runner.canRunInfo(pr)
-          logger info s"Database - Type: $t"
+          logger info s"Database - Action: $action"
           logger info s"Database - Repository: ${pr.base.owner}/${pr.base.repository}"
           logger warn s"Skip - $log"
 
-        case Success(Event(t,pr)) =>
-          logger info s"Database - Type: $t"
+        case Success(Event(action, pr)) =>
+          logger info s"Database - Action: $action"
           logger info s"Database - Repository: ${pr.base.owner}/${pr.base.repository}"
 
           logger info s"Prioritizing - Start process"
