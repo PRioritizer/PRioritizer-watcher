@@ -23,10 +23,12 @@ class MongoDatabase(host: String, port: Int, username: String, password: String,
     collection = database.getCollection(collectionName)
   }
 
-  def getPullRequest(id: String) : Try[PullRequest] = {
+  def getPullRequest(id: String) : Try[Event] = {
     Try {
       val query = new BasicDBObject("id", id)
       val fields = new BasicDBObject()
+
+      fields.put("type", 1)
 
       fields.put("payload.pull_request.head.label", 1)
       fields.put("payload.pull_request.head.sha", 1)
@@ -40,6 +42,8 @@ class MongoDatabase(host: String, port: Int, username: String, password: String,
 
       val result = collection.findOne(query, fields)
 
+      val eventType = getField(result, "type")
+
       val head_label = getField(result, "payload.pull_request.head.label")
       val head_sha = getField(result, "payload.pull_request.head.sha")
       val head_repo_name = getField(result, "payload.pull_request.head.repo.name", "Unknown")
@@ -50,9 +54,12 @@ class MongoDatabase(host: String, port: Int, username: String, password: String,
       val base_repo_name = getField(result, "payload.pull_request.base.repo.name")
       val base_repo_owner_login = getField(result, "payload.pull_request.base.repo.owner.login")
 
-      PullRequest(
-        Head(head_label, head_sha, head_repo_owner_login, head_repo_name),
-        Base(base_label, base_sha, base_repo_owner_login, base_repo_name)
+      Event(
+        eventType,
+        PullRequest(
+          Head(head_label, head_sha, head_repo_owner_login, head_repo_name),
+          Base(base_label, base_sha, base_repo_owner_login, base_repo_name)
+        )
       )
     }
   }

@@ -7,6 +7,7 @@ import settings.{TaskSettings, MongoDBSettings, RabbitMQSettings}
 import task.{CommandLineRunner, TaskRunner}
 import scala.util.{Failure, Success}
 import utils.Extensions._
+import events.Event
 
 object Watcher {
   val logger = LoggerFactory.getLogger("Watcher")
@@ -47,13 +48,15 @@ object Watcher {
         database.getPullRequest(m.contents)
       }
       .foreach {
-        case Success(pr) if !runner.canRun(pr) =>
+        case Success(Event(t,pr)) if !runner.canRun(pr) =>
           val (_, log) = runner.canRunInfo(pr)
-          logger info s"Database lookup - Repository: ${pr.base.owner}/${pr.base.repository}"
+          logger info s"Database - Type: $t"
+          logger info s"Database - Repository: ${pr.base.owner}/${pr.base.repository}"
           logger warn s"Skip - $log"
 
-        case Success(pr) =>
-          logger info s"Database lookup - Repository: ${pr.base.owner}/${pr.base.repository}"
+        case Success(Event(t,pr)) =>
+          logger info s"Database - Type: $t"
+          logger info s"Database - Repository: ${pr.base.owner}/${pr.base.repository}"
 
           logger info s"Prioritizing - Start process"
           val result = runner.run(pr)
