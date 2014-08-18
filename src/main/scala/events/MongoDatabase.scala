@@ -2,6 +2,7 @@ package events
 
 import com.mongodb._
 import pullrequest.{Base, Head, PullRequest}
+
 import scala.util.Try
 
 class MongoDatabase(host: String, port: Int, username: String, password: String, databaseName: String, collectionName: String) extends EventDatabase {

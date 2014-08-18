@@ -1,13 +1,13 @@
 import java.io.PrintWriter
 
-import events.{MongoDatabase, EventDatabase}
+import events.{Event, EventDatabase, MongoDatabase}
 import org.slf4j.LoggerFactory
-import queue.{RabbitMQ, PullRequestQueue}
-import settings.{TaskSettings, MongoDBSettings, RabbitMQSettings}
+import queue.{PullRequestQueue, RabbitMQ}
+import settings.{MongoDBSettings, RabbitMQSettings, TaskSettings}
 import task.{CommandLineRunner, TaskRunner}
-import scala.util.{Failure, Success}
 import utils.Extensions._
-import events.Event
+
+import scala.util.{Failure, Success}
 
 object Watcher {
   val logger = LoggerFactory.getLogger("Watcher")

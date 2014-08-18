@@ -1,8 +1,10 @@
 package task
 
-import java.io.{PrintWriter, ByteArrayOutputStream, File}
+import java.io.{ByteArrayOutputStream, File, PrintWriter}
+
 import pullrequest.{Base, PullRequest}
-import sys.process._
+
+import scala.sys.process._
 
 class CommandLineRunner(repositories: String, command: String, output: PrintWriter) extends TaskRunner {
   def runWithOutput(pullRequest: PullRequest): (Boolean, String, String) = {
