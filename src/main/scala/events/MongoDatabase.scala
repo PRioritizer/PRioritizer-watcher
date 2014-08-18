@@ -31,6 +31,8 @@ class MongoDatabase(host: String, port: Int, username: String, password: String,
 
       fields.put("payload.action", 1)
 
+      fields.put("payload.pull_request.number", 1)
+
       fields.put("payload.pull_request.head.label", 1)
       fields.put("payload.pull_request.head.sha", 1)
       fields.put("payload.pull_request.head.repo.name", 1)
@@ -45,6 +47,8 @@ class MongoDatabase(host: String, port: Int, username: String, password: String,
 
       val action = getField(result, "payload.action")
 
+      val number = getField(result, "payload.pull_request.number").asInstanceOf[Int]
+
       val head_label = getField(result, "payload.pull_request.head.label")
       val head_sha = getField(result, "payload.pull_request.head.sha")
       val head_repo_name = getField(result, "payload.pull_request.head.repo.name", "Unknown")
@@ -58,6 +62,7 @@ class MongoDatabase(host: String, port: Int, username: String, password: String,
       Event(
         action,
         PullRequest(
+          number,
           Head(head_label, head_sha, head_repo_owner_login, head_repo_name),
           Base(base_label, base_sha, base_repo_owner_login, base_repo_name)
         )
