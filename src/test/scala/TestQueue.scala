@@ -5,11 +5,11 @@ class TestQueue extends PullRequestQueue {
 
   def stream: Stream[Message] = {
     val list = List(
-      Message("1"),
-      Message("2"),
-      Message("3"),
-      Message("4"),
-      Message("5")
+      Message("2251766881"),
+      Message("2251766799"),
+      Message("2251766932"),
+      Message("2251767277"),
+      Message("2251767227")
     )
 
     list.toStream

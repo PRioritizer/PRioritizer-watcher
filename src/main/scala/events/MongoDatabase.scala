@@ -45,19 +45,19 @@ class MongoDatabase(host: String, port: Int, username: String, password: String,
 
       val result = collection.findOne(query, fields)
 
-      val action = getField(result, "payload.action")
+      val action = getField[String](result, "payload.action").get
 
-      val number = getField(result, "payload.pull_request.number").asInstanceOf[Int]
+      val number = getField[Int](result, "payload.pull_request.number").get
 
-      val head_label = getField(result, "payload.pull_request.head.label")
-      val head_sha = getField(result, "payload.pull_request.head.sha")
-      val head_repo_name = getField(result, "payload.pull_request.head.repo.name", "Unknown")
-      val head_repo_owner_login = getField(result, "payload.pull_request.head.repo.owner.login", "Unknown")
+      val head_label = getField[String](result, "payload.pull_request.head.label").get
+      val head_sha = getField[String](result, "payload.pull_request.head.sha").get
+      val head_repo_name = getField[String](result, "payload.pull_request.head.repo.name").getOrElse("Unknown")
+      val head_repo_owner_login = getField[String](result, "payload.pull_request.head.repo.owner.login").getOrElse("Unknown")
 
-      val base_label = getField(result, "payload.pull_request.base.label")
-      val base_sha = getField(result, "payload.pull_request.base.sha")
-      val base_repo_name = getField(result, "payload.pull_request.base.repo.name")
-      val base_repo_owner_login = getField(result, "payload.pull_request.base.repo.owner.login")
+      val base_label = getField[String](result, "payload.pull_request.base.label").get
+      val base_sha = getField[String](result, "payload.pull_request.base.sha").get
+      val base_repo_name = getField[String](result, "payload.pull_request.base.repo.name").get
+      val base_repo_owner_login = getField[String](result, "payload.pull_request.base.repo.owner.login").get
 
       Event(
         action,
@@ -70,16 +70,17 @@ class MongoDatabase(host: String, port: Int, username: String, password: String,
     }
   }
 
-  private def getField(obj: DBObject, fullPath: String, defaultValue: String = null): String = {
-    def iter(x: AnyRef, path: Array[String]): String = {
+  private def getField[T](obj: DBObject, fullPath: String): Option[T] = {
+    def iteration(x: Any, path: Array[String]): Option[T] = {
       x match {
-        case o: DBObject => iter(o.get(path.head), path.tail)
-        case s: String => s
-        case _ if defaultValue != null => defaultValue
-        case _ => throw new NoSuchElementException(s"Unknown field $fullPath")
+        case l: BasicDBList => Some(l.toArray.toList.map(e => iteration(e, path)).asInstanceOf[T])
+        case o: DBObject => iteration(o.get(path.head), path.tail)
+        case s: String => Some(s.asInstanceOf[T])
+        case i: Int => Some(i.asInstanceOf[T])
+        case _ => None
       }
     }
-    iter(obj, fullPath.split("""\."""))
+    iteration(obj, fullPath.split("""\."""))
   }
 
   def close(): Unit = {
