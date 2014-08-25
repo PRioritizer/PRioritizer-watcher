@@ -1,4 +1,5 @@
 rabbitmq.host=
+rabbitmq.port=
 rabbitmq.username=
 rabbitmq.password=
 rabbitmq.queue=

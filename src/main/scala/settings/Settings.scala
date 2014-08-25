@@ -7,6 +7,7 @@ import scala.collection.JavaConverters._
 
 object RabbitMQSettings {
   lazy val host = Settings.get("rabbitmq.host").getOrElse("localhost")
+  lazy val port = Settings.get("rabbitmq.port").fold(5672)(p => p.toInt)
   lazy val username = Settings.get("rabbitmq.username").getOrElse("")
   lazy val password = Settings.get("rabbitmq.password").getOrElse("")
   lazy val queue = Settings.get("rabbitmq.queue").getOrElse("")

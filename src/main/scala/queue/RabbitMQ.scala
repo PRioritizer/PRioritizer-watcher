@@ -3,7 +3,7 @@ package queue
 import com.rabbitmq.client.QueueingConsumer.Delivery
 import com.rabbitmq.client.{Channel, Connection, ConnectionFactory, QueueingConsumer}
 
-class RabbitMQ(host: String, username: String, password: String, queue: String) extends PullRequestQueue {
+class RabbitMQ(host: String, port: Int, username: String, password: String, queue: String) extends PullRequestQueue {
   private var connection: Connection = _
   private var channel: Channel = _
   private var _stream: Stream[Message] = _
@@ -11,6 +11,7 @@ class RabbitMQ(host: String, username: String, password: String, queue: String) 
   def open(): Unit = {
     val factory = new ConnectionFactory
     factory.setHost(host)
+    factory.setPort(port)
     factory.setUsername(username)
     factory.setPassword(password)
     connection = factory.newConnection

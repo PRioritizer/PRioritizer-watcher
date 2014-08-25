@@ -15,6 +15,7 @@ object Watcher {
   def main(args: Array[String]): Unit = {
     val queue = new RabbitMQ(
       RabbitMQSettings.host,
+      RabbitMQSettings.port,
       RabbitMQSettings.username,
       RabbitMQSettings.password,
       RabbitMQSettings.queue)
