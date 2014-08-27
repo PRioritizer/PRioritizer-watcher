@@ -45,6 +45,9 @@ class MongoDatabase(host: String, port: Int, username: String, password: String,
 
       val result = collection.findOne(query, fields)
 
+      if (!getField(result, "payload.action").isDefined)
+        throw new NoSuchElementException("The event could not be retrieved from the database")
+
       val action = getField[String](result, "payload.action").get
 
       val number = getField[Int](result, "payload.pull_request.number").get
