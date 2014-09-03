@@ -20,7 +20,7 @@ class RabbitMQ(host: String, port: Int, username: String, password: String, queu
   def stream: Stream[Message] = {
     if (_stream == null) {
       val consumer = listen
-      _stream = Stream.continually(wait(consumer))
+      _stream = Stream continually wait(consumer)
     }
     _stream
   }
