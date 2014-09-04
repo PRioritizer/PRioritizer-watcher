@@ -1,14 +1,40 @@
 package events
 
 import com.mongodb._
+import com.mongodb.casbah.commons.MongoDBObject
 import pullrequest.{Base, Head, PullRequest}
 
 import scala.util.Try
 
+object PullRequestFields {
+  val action = "payload.action"
+  val number = "payload.pull_request.number"
+  val headLabel = "payload.pull_request.head.label"
+  val headSha = "payload.pull_request.head.sha"
+  val headName = "payload.pull_request.head.repo.name"
+  val headOwner = "payload.pull_request.head.repo.owner.login"
+  val baseLabel = "payload.pull_request.base.label"
+  val baseSha = "payload.pull_request.base.sha"
+  val baseName = "payload.pull_request.base.repo.name"
+  val baseOwner = "payload.pull_request.base.repo.owner.login"
+
+  val select = List(
+    action,
+    number,
+    headLabel,
+    headSha,
+    headName,
+    headOwner,
+    baseLabel,
+    baseSha,
+    baseName,
+    baseOwner
+  )
+}
+
 class MongoDatabase(host: String, port: Int, username: String, password: String, databaseName: String, collectionName: String) extends EventDatabase {
   private var client: MongoClient = _
   private var database: DB = _
-  private var collection: DBCollection = _
 
   def open(): Unit = {
     val server = new ServerAddress(host, port)
@@ -21,46 +47,27 @@ class MongoDatabase(host: String, port: Int, username: String, password: String,
 
     client.setReadPreference(ReadPreference.secondaryPreferred())
     database = client.getDB(databaseName)
-    collection = database.getCollection(collectionName)
   }
 
   def getPullRequest(id: String) : Try[Event] = {
     Try {
-      val query = new BasicDBObject("id", id)
-      val fields = new BasicDBObject()
+      val result = getByKey(collectionName, List("id" -> id), PullRequestFields.select)
 
-      fields.put("payload.action", 1)
-
-      fields.put("payload.pull_request.number", 1)
-
-      fields.put("payload.pull_request.head.label", 1)
-      fields.put("payload.pull_request.head.sha", 1)
-      fields.put("payload.pull_request.head.repo.name", 1)
-      fields.put("payload.pull_request.head.repo.owner.login", 1)
-
-      fields.put("payload.pull_request.base.label", 1)
-      fields.put("payload.pull_request.base.sha", 1)
-      fields.put("payload.pull_request.base.repo.name", 1)
-      fields.put("payload.pull_request.base.repo.owner.login", 1)
-
-      val result = collection.findOne(query, fields)
-
-      if (!getField(result, "payload.action").isDefined)
+      if (!result.get(PullRequestFields.action).isDefined)
         throw new NoSuchElementException("The event could not be retrieved from the database")
 
-      val action = getField[String](result, "payload.action").get
+      val action = result.get(PullRequestFields.action).get.asInstanceOf[String]
+      val number = result.get(PullRequestFields.number).get.asInstanceOf[Int]
 
-      val number = getField[Int](result, "payload.pull_request.number").get
+      val head_label = result.get(PullRequestFields.headLabel).get.asInstanceOf[String]
+      val head_sha = result.get(PullRequestFields.headSha).get.asInstanceOf[String]
+      val head_repo_name = result.getOrElse(PullRequestFields.headName, "Unknown").asInstanceOf[String]
+      val head_repo_owner_login = result.getOrElse(PullRequestFields.headOwner, "Unknown").asInstanceOf[String]
 
-      val head_label = getField[String](result, "payload.pull_request.head.label").get
-      val head_sha = getField[String](result, "payload.pull_request.head.sha").get
-      val head_repo_name = getField[String](result, "payload.pull_request.head.repo.name").getOrElse("Unknown")
-      val head_repo_owner_login = getField[String](result, "payload.pull_request.head.repo.owner.login").getOrElse("Unknown")
-
-      val base_label = getField[String](result, "payload.pull_request.base.label").get
-      val base_sha = getField[String](result, "payload.pull_request.base.sha").get
-      val base_repo_name = getField[String](result, "payload.pull_request.base.repo.name").get
-      val base_repo_owner_login = getField[String](result, "payload.pull_request.base.repo.owner.login").get
+      val base_label = result.get(PullRequestFields.baseLabel).get.asInstanceOf[String]
+      val base_sha = result.get(PullRequestFields.baseSha).get.asInstanceOf[String]
+      val base_repo_name = result.get(PullRequestFields.baseName).get.asInstanceOf[String]
+      val base_repo_owner_login = result.get(PullRequestFields.baseOwner).get.asInstanceOf[String]
 
       Event(
         action,
@@ -71,6 +78,23 @@ class MongoDatabase(host: String, port: Int, username: String, password: String,
         )
       )
     }
+  }
+
+  def getByKey(collectionName: String, key: List[(String, Any)], select: List[String]) : Map[String, Any] = {
+    if (key.exists { case (k, v) => k == null || k == "" })
+      return Map()
+
+    val query = MongoDBObject(key)
+
+    val fields = new BasicDBObject()
+    select.foreach(f => fields.put(f, 1))
+
+    val collection = database.getCollection(collectionName)
+    val result = collection.findOne(query, fields)
+    select
+      .map(f => getField[Any](result, f).map(v => (f, v)))
+      .flatten
+      .toMap
   }
 
   private def getField[T](obj: DBObject, fullPath: String): Option[T] = {
