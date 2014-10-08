@@ -1,6 +1,8 @@
 PRioritizer watcher
 ===================
 
+[![Build Status](https://magnum.travis-ci.com/erikvdv1/PRioritizer-watcher.svg?token=wgtEsFC7Tpxoy7U9Y5p1&branch=master)](https://magnum.travis-ci.com/erikvdv1/PRioritizer-watcher)
+
 A pull request watcher written in Scala.
 
 Listens for RabbitMQ messages that contain an event id of pull request events.
