@@ -29,8 +29,9 @@ class CommandLineRunner(repositories: String, command: String, output: PrintWrit
   def canRunInfo(pullRequest: PullRequest): (Boolean, String) = {
     val base = pullRequest.base
     val repoFile = getRepoFile(base)
+    val bareRepoFile = getBareRepoFile(base)
 
-    if (repoFile.exists)
+    if (repoFile.exists || bareRepoFile.exists)
       (true, "")
     else
       (false, "Repository directory does not exist")
@@ -38,7 +39,10 @@ class CommandLineRunner(repositories: String, command: String, output: PrintWrit
 
   private def parseCommand(pullRequest: PullRequest): String = {
     val base = pullRequest.base
-    val path = getRepoFile(base).getAbsolutePath
+    val repoFile = getRepoFile(base)
+    val bareRepoFile = getBareRepoFile(base)
+
+    val path = if (bareRepoFile.exists) bareRepoFile.getAbsolutePath else repoFile.getAbsolutePath
 
     command
       .replace("$owner", base.owner)
@@ -48,5 +52,8 @@ class CommandLineRunner(repositories: String, command: String, output: PrintWrit
 
   private def getRepoFile(base: Base) =
     new File(new File(repositories, base.owner), base.repository)
+
+  private def getBareRepoFile(base: Base) =
+    new File(new File(repositories, base.owner), base.repository + ".git")
 
 }
