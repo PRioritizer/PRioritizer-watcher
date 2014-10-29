@@ -1,6 +1,7 @@
 import java.io.PrintWriter
 
 import events.{Event, EventDatabase, MongoDatabase}
+import org.joda.time.DateTimeZone
 import org.slf4j.LoggerFactory
 import queue.{PullRequestQueue, RabbitMQ}
 import settings.{MongoDBSettings, RabbitMQSettings, TaskSettings}
@@ -51,14 +52,14 @@ object Watcher {
       .foreach {
         case Success(Event(timestamp, action, pr)) if !runner.canRun(pr) =>
           val (_, log) = runner.canRunInfo(pr)
-          logger info s"Database - Timestamp: ${timestamp.toString("yyyy-MM-dd HH:mm:ss.SSS")}"
+          logger info s"Database - Timestamp: ${timestamp.withZone(DateTimeZone.getDefault).toString("yyyy-MM-dd HH:mm:ss.SSS")}"
           logger info s"Database - Action: $action"
           logger info s"Database - Number: ${pr.number}"
           logger info s"Database - Repository: ${pr.base.owner}/${pr.base.repository}"
           logger warn s"Skip - $log"
 
         case Success(Event(timestamp, action, pr)) =>
-          logger info s"Database - Timestamp: ${timestamp.toString("yyyy-MM-dd HH:mm:ss.SSS")}"
+          logger info s"Database - Timestamp: ${timestamp.withZone(DateTimeZone.getDefault).toString("yyyy-MM-dd HH:mm:ss.SSS")}"
           logger info s"Database - Action: $action"
           logger info s"Database - Number: ${pr.number}"
           logger info s"Database - Repository: ${pr.base.owner}/${pr.base.repository}"
