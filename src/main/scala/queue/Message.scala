@@ -1,3 +1,5 @@
 package queue
 
-case class Message(contents: String)
+import org.joda.time.DateTime
+
+case class Message(timestamp: DateTime, contents: String)

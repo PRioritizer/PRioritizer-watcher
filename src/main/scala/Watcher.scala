@@ -46,6 +46,7 @@ object Watcher {
       queue.stream
       .map { m =>
         logger info s"New event - ID: ${m.contents}"
+        logger info s"New event - Timestamp: ${m.timestamp.toString("yyyy-MM-dd HH:mm:ss.SSS")}"
         database.getPullRequest(m.contents)
       }
       .foreach {
