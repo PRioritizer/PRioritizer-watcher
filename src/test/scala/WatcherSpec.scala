@@ -5,6 +5,7 @@ import settings.TaskSettings
 import task.CommandLineRunner
 
 class WatcherSpec extends Specification {
+/*
   val command = TaskSettings.command
   val repoDir = TaskSettings.repositories
 
@@ -18,4 +19,5 @@ class WatcherSpec extends Specification {
       true must beTrue
     }
   }
+*/
 }

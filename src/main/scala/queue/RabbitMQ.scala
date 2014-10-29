@@ -2,7 +2,6 @@ package queue
 
 import com.rabbitmq.client.QueueingConsumer.Delivery
 import com.rabbitmq.client.{Channel, Connection, ConnectionFactory, QueueingConsumer}
-import org.joda.time.DateTime
 
 class RabbitMQ(host: String, port: Int, username: String, password: String, queue: String) extends PullRequestQueue {
   private var connection: Connection = _
@@ -50,9 +49,8 @@ class RabbitMQ(host: String, port: Int, username: String, password: String, queu
     // Wait for next message
     val delivery = consumer.nextDelivery()
     val eventId = new String(delivery.getBody)
-    val timestamp = delivery.getProperties.getTimestamp
     acknowledge(delivery)
-    Message(new DateTime(timestamp), eventId)
+    Message(eventId)
   }
 
   def acknowledge(delivery: Delivery, success: Boolean = true): Unit = {
