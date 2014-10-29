@@ -16,4 +16,5 @@ libraryDependencies ++= Seq(
   "org.slf4j" % "slf4j-simple" % "1.7.5"
 )
 
-test in assembly := {}
+// Skip WatcherSpec as it is more like an integration test that only runs in a proper environment
+testOptions := Seq(Tests.Filter(s => s != "WatcherSpec"))
