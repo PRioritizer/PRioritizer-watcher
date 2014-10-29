@@ -2,11 +2,13 @@ package events
 
 import com.mongodb._
 import com.mongodb.casbah.commons.MongoDBObject
+import org.joda.time.DateTime
 import pullrequest.{Base, Head, PullRequest}
 
 import scala.util.Try
 
 object PullRequestFields {
+  val created = "created_at"
   val action = "payload.action"
   val number = "payload.pull_request.number"
   val headLabel = "payload.pull_request.head.label"
@@ -19,6 +21,7 @@ object PullRequestFields {
   val baseOwner = "payload.pull_request.base.repo.owner.login"
 
   val select = List(
+    created,
     action,
     number,
     headLabel,
@@ -56,6 +59,7 @@ class MongoDatabase(host: String, port: Int, username: String, password: String,
       if (!result.get(PullRequestFields.action).isDefined)
         throw new NoSuchElementException("The event could not be retrieved from the database")
 
+      val timestamp = result.get(PullRequestFields.created).get.asInstanceOf[String]
       val action = result.get(PullRequestFields.action).get.asInstanceOf[String]
       val number = result.get(PullRequestFields.number).get.asInstanceOf[Int]
 
@@ -70,6 +74,7 @@ class MongoDatabase(host: String, port: Int, username: String, password: String,
       val base_repo_owner_login = result.get(PullRequestFields.baseOwner).get.asInstanceOf[String]
 
       Event(
+        DateTime.parse(timestamp),
         action,
         PullRequest(
           number,

@@ -9,6 +9,7 @@ version := "1.0"
 scalaVersion := "2.11.0"
 
 libraryDependencies ++= Seq(
+  "com.github.nscala-time" %% "nscala-time" % "1.2.0",
   "com.rabbitmq" % "amqp-client" % "3.3.4",
   "org.mongodb" %% "casbah" % "2.7.2",
   "org.specs2" % "specs2_2.11" % "2.3.12" % "test",
