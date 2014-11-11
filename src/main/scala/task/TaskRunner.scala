@@ -1,11 +1,11 @@
 package task
 
-import pullrequest.PullRequest
+import events.Event
 
 trait TaskRunner {
-  def run(pullRequest: PullRequest): Boolean
+  def run(event: Event): Boolean
 
-  def canRun(pullRequest: PullRequest): Boolean = canRunInfo(pullRequest)._1
+  def canRun(event: Event): Boolean = canRunInfo(event)._1
 
-  def canRunInfo(pullRequest: PullRequest): (Boolean, String)
+  def canRunInfo(event: Event): (Boolean, String)
 }

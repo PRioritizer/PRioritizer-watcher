@@ -1,19 +1,19 @@
-import pullrequest.PullRequest
+import events.Event
 import task.TaskRunner
 
 class TestRunner(command: String) extends TaskRunner {
-  def run(pullRequest: PullRequest): Boolean = {
-    val taskCommand = parseCommand(pullRequest)
+  def run(event: Event): Boolean = {
+    val taskCommand = parseCommand(event)
     println(s"Executing: $taskCommand")
     true
   }
 
-  def canRunInfo(pullRequest: PullRequest): (Boolean, String) = {
+  def canRunInfo(event: Event): (Boolean, String) = {
     (true, "<message>")
   }
 
-  private def parseCommand(pullRequest: PullRequest): String = {
-    val base = pullRequest.base
+  private def parseCommand(event: Event): String = {
+    val base = event.pullRequest.base
     command
       .replace("$owner", base.owner)
       .replace("$repository", base.repository)

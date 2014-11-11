@@ -8,8 +8,6 @@ import settings._
 import task.{CommandLineRunner, TaskRunner}
 import utils.Extensions._
 
-import scala.util.{Failure, Success}
-
 object Watcher {
   val logger = LoggerFactory.getLogger("Watcher")
 
@@ -55,18 +53,18 @@ object Watcher {
         database.getPullRequest(m.contents)
       }
       .foreach {
-        case Event(timestamp, action, pr) =>
-          logger info s"Database - Timestamp: ${timestamp.withZone(DateTimeZone.getDefault).toString("yyyy-MM-dd HH:mm:ss.SSS")}"
-          logger info s"Database - Action: $action"
-          logger info s"Database - Number: ${pr.number}"
-          logger info s"Database - Repository: ${pr.base.owner}/${pr.base.repository}"
+        case e: Event =>
+          logger info s"Database - Timestamp: ${e.timestamp.withZone(DateTimeZone.getDefault).toString("yyyy-MM-dd HH:mm:ss.SSS")}"
+          logger info s"Database - Action: ${e.action}"
+          logger info s"Database - Number: ${e.pullRequest.number}"
+          logger info s"Database - Repository: ${e.pullRequest.base.owner}/${e.pullRequest.base.repository}"
 
-          if (!runner.canRun(pr)) {
-            val (_, log) = runner.canRunInfo(pr)
+          if (!runner.canRun(e)) {
+            val (_, log) = runner.canRunInfo(e)
             logger warn s"Skip - $log"
           } else {
             logger info s"Prioritizing - Start process"
-            val result = runner.run(pr)
+            val result = runner.run(e)
             if (result) logger info s"Prioritizing - Process completed"
             else logger error s"Prioritizing - Process completed with errors"
           }

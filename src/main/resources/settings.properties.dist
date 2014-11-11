@@ -14,4 +14,4 @@ mongodb.database=
 mongodb.collection=
 
 prioritizer.repositories=/path/to/repos
-prioritizer.command=/path/to/analyzer $owner $repository $dir
+prioritizer.command=/path/to/analyzer $owner $repository $dir [$timestamp]
