@@ -4,7 +4,7 @@ import events.{Event, EventDatabase, MongoDatabase}
 import org.joda.time.DateTimeZone
 import org.slf4j.LoggerFactory
 import queue.{PullRequestQueue, RabbitMQ}
-import settings.{MongoDBSettings, RabbitMQSettings, TaskSettings}
+import settings._
 import task.{CommandLineRunner, TaskRunner}
 import utils.Extensions._
 
@@ -35,7 +35,12 @@ object Watcher {
       new PrintWriter(System.out, true)
     )
 
-    watch(queue, database, runner)
+    while (true) {
+      watch(queue, database, runner)
+      logger info s"Connection - Trying to reconnect in ${WatcherSettings.connectionTimeout} seconds..."
+      Thread.sleep(WatcherSettings.connectionTimeout * 1000)
+    }
+
     println("Bye")
   }
 
@@ -70,10 +75,13 @@ object Watcher {
           else logger error s"Prioritizing - Process completed with errors"
 
         case Failure(e) =>
-          logger error s"Database lookup - Error: ${e.getMessage}"
+          logger error s"Database - ${e.getMessage}"
           logger error s"Stack trace - Begin\n${e.stackTraceToString}"
           logger error s"Stack trace - End"
       }
+    } catch {
+      case e: Throwable =>
+        logger error s"Connection - ${e.getMessage}"
     } finally {
       database.close()
       queue.close()

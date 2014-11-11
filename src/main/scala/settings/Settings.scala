@@ -5,6 +5,10 @@ import java.util.Properties
 
 import scala.collection.JavaConverters._
 
+object WatcherSettings {
+  lazy val connectionTimeout = Settings.get("connection.timeout").fold(60)(p => p.toInt)
+}
+
 object RabbitMQSettings {
   lazy val host = Settings.get("rabbitmq.host").getOrElse("localhost")
   lazy val port = Settings.get("rabbitmq.port").fold(5672)(p => p.toInt)
