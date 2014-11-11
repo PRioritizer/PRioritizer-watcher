@@ -52,37 +52,35 @@ class MongoDatabase(host: String, port: Int, username: String, password: String,
     database = client.getDB(databaseName)
   }
 
-  def getPullRequest(id: String) : Try[Event] = {
-    Try {
-      val result = getByKey(collectionName, List("id" -> id), PullRequestFields.select)
+  def getPullRequest(id: String) : Event = {
+    val result = getByKey(collectionName, List("id" -> id), PullRequestFields.select)
 
-      if (!result.get(PullRequestFields.action).isDefined)
-        throw new NoSuchElementException("The event could not be retrieved from the database")
+    if (!result.get(PullRequestFields.action).isDefined)
+      throw new NoSuchElementException("The event could not be retrieved from the database")
 
-      val timestamp = result.get(PullRequestFields.created).get.asInstanceOf[String]
-      val action = result.get(PullRequestFields.action).get.asInstanceOf[String]
-      val number = result.get(PullRequestFields.number).get.asInstanceOf[Int]
+    val timestamp = result.get(PullRequestFields.created).get.asInstanceOf[String]
+    val action = result.get(PullRequestFields.action).get.asInstanceOf[String]
+    val number = result.get(PullRequestFields.number).get.asInstanceOf[Int]
 
-      val head_label = result.get(PullRequestFields.headLabel).get.asInstanceOf[String]
-      val head_sha = result.get(PullRequestFields.headSha).get.asInstanceOf[String]
-      val head_repo_name = result.getOrElse(PullRequestFields.headName, "Unknown").asInstanceOf[String]
-      val head_repo_owner_login = result.getOrElse(PullRequestFields.headOwner, "Unknown").asInstanceOf[String]
+    val head_label = result.get(PullRequestFields.headLabel).get.asInstanceOf[String]
+    val head_sha = result.get(PullRequestFields.headSha).get.asInstanceOf[String]
+    val head_repo_name = result.getOrElse(PullRequestFields.headName, "Unknown").asInstanceOf[String]
+    val head_repo_owner_login = result.getOrElse(PullRequestFields.headOwner, "Unknown").asInstanceOf[String]
 
-      val base_label = result.get(PullRequestFields.baseLabel).get.asInstanceOf[String]
-      val base_sha = result.get(PullRequestFields.baseSha).get.asInstanceOf[String]
-      val base_repo_name = result.get(PullRequestFields.baseName).get.asInstanceOf[String]
-      val base_repo_owner_login = result.get(PullRequestFields.baseOwner).get.asInstanceOf[String]
+    val base_label = result.get(PullRequestFields.baseLabel).get.asInstanceOf[String]
+    val base_sha = result.get(PullRequestFields.baseSha).get.asInstanceOf[String]
+    val base_repo_name = result.get(PullRequestFields.baseName).get.asInstanceOf[String]
+    val base_repo_owner_login = result.get(PullRequestFields.baseOwner).get.asInstanceOf[String]
 
-      Event(
-        DateTime.parse(timestamp),
-        action,
-        PullRequest(
-          number,
-          Head(head_label, head_sha, head_repo_owner_login, head_repo_name),
-          Base(base_label, base_sha, base_repo_owner_login, base_repo_name)
-        )
+    Event(
+      DateTime.parse(timestamp),
+      action,
+      PullRequest(
+        number,
+        Head(head_label, head_sha, head_repo_owner_login, head_repo_name),
+        Base(base_label, base_sha, base_repo_owner_login, base_repo_name)
       )
-    }
+    )
   }
 
   def getByKey(collectionName: String, key: List[(String, Any)], select: List[String]) : Map[String, Any] = {

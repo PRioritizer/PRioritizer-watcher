@@ -55,33 +55,27 @@ object Watcher {
         database.getPullRequest(m.contents)
       }
       .foreach {
-        case Success(Event(timestamp, action, pr)) if !runner.canRun(pr) =>
-          val (_, log) = runner.canRunInfo(pr)
-          logger info s"Database - Timestamp: ${timestamp.withZone(DateTimeZone.getDefault).toString("yyyy-MM-dd HH:mm:ss.SSS")}"
-          logger info s"Database - Action: $action"
-          logger info s"Database - Number: ${pr.number}"
-          logger info s"Database - Repository: ${pr.base.owner}/${pr.base.repository}"
-          logger warn s"Skip - $log"
-
-        case Success(Event(timestamp, action, pr)) =>
+        case Event(timestamp, action, pr) =>
           logger info s"Database - Timestamp: ${timestamp.withZone(DateTimeZone.getDefault).toString("yyyy-MM-dd HH:mm:ss.SSS")}"
           logger info s"Database - Action: $action"
           logger info s"Database - Number: ${pr.number}"
           logger info s"Database - Repository: ${pr.base.owner}/${pr.base.repository}"
 
-          logger info s"Prioritizing - Start process"
-          val result = runner.run(pr)
-          if (result) logger info s"Prioritizing - Process completed"
-          else logger error s"Prioritizing - Process completed with errors"
-
-        case Failure(e) =>
-          logger error s"Database - ${e.getMessage}"
-          logger error s"Stack trace - Begin\n${e.stackTraceToString}"
-          logger error s"Stack trace - End"
+          if (!runner.canRun(pr)) {
+            val (_, log) = runner.canRunInfo(pr)
+            logger warn s"Skip - $log"
+          } else {
+            logger info s"Prioritizing - Start process"
+            val result = runner.run(pr)
+            if (result) logger info s"Prioritizing - Process completed"
+            else logger error s"Prioritizing - Process completed with errors"
+          }
       }
     } catch {
       case e: Throwable =>
-        logger error s"Connection - ${e.getMessage}"
+        logger error s"Exception - ${e.getMessage}"
+        logger error s"Stack trace - Begin\n${e.stackTraceToString}"
+        logger error s"Stack trace - End"
     } finally {
       database.close()
       queue.close()
