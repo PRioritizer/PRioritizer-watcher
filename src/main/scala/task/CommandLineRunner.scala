@@ -56,9 +56,9 @@ class CommandLineRunner(repositories: String, command: String, output: PrintWrit
   }
 
   private def getRepoFile(base: Base) =
-    new File(new File(repositories, base.owner), base.repository)
+    new File(new File(repositories, base.owner.toLowerCase), base.repository.toLowerCase)
 
   private def getBareRepoFile(base: Base) =
-    new File(new File(repositories, base.owner), base.repository + ".git")
+    new File(new File(repositories, base.owner.toLowerCase), base.repository.toLowerCase + ".git")
 
 }
