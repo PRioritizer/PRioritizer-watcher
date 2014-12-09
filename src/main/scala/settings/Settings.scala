@@ -27,6 +27,7 @@ object MongoDBSettings {
 }
 
 object TaskSettings {
+  lazy val output = Settings.get("prioritizer.output").getOrElse("")
   lazy val repositories = Settings.get("prioritizer.repositories").getOrElse("")
   lazy val command = Settings.get("prioritizer.command").getOrElse("")
 }

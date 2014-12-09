@@ -13,5 +13,6 @@ mongodb.password=
 mongodb.database=
 mongodb.collection=
 
+prioritizer.output=/path/to/output
 prioritizer.repositories=/path/to/repos
-prioritizer.command=/path/to/analyzer $owner $repository $dir [$timestamp]
+prioritizer.command=/path/to/analyzer $owner $repository $dir

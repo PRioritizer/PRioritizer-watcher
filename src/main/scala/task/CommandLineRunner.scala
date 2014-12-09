@@ -3,7 +3,9 @@ package task
 import java.io.{ByteArrayOutputStream, File, PrintWriter}
 
 import events.Event
+import org.joda.time.DateTime
 import pullrequest.Base
+import settings.TaskSettings
 
 import scala.sys.process._
 
@@ -33,10 +35,12 @@ class CommandLineRunner(repositories: String, command: String, output: PrintWrit
     val repoFile = getRepoFile(base)
     val bareRepoFile = getBareRepoFile(base)
 
-    if (repoFile.exists || bareRepoFile.exists)
-      (true, "")
-    else
+    if (!repoFile.exists && !bareRepoFile.exists)
       (false, "Repository directory does not exist")
+    else if (event.timestamp.isBefore(getLatestUpdate(base)))
+      (false, "Already up-to-date with respect to the event")
+    else
+      (true, "")
   }
 
   private def parseCommand(event: Event): String = {
@@ -44,15 +48,12 @@ class CommandLineRunner(repositories: String, command: String, output: PrintWrit
     val base = pullRequest.base
     val repoFile = getRepoFile(base)
     val bareRepoFile = getBareRepoFile(base)
-
     val path = if (bareRepoFile.exists) bareRepoFile.getAbsolutePath else repoFile.getAbsolutePath
-    val timestamp = (event.timestamp.getMillis / 1000).toString
 
     command
       .replace("$owner", base.owner)
       .replace("$repository", base.repository)
       .replace("$dir", path)
-      .replace("$timestamp", timestamp)
   }
 
   private def getRepoFile(base: Base) =
@@ -60,5 +61,12 @@ class CommandLineRunner(repositories: String, command: String, output: PrintWrit
 
   private def getBareRepoFile(base: Base) =
     new File(new File(repositories, base.owner.toLowerCase), base.repository.toLowerCase + ".git")
+
+  private def getLatestUpdate(base: Base): DateTime = {
+    val folder = new File(TaskSettings.output, base.owner)
+    val files = folder.listFiles.toList.filter(f => f.getName.startsWith(base.repository + '.'))
+    val date = files.headOption.map(f => new DateTime(f.lastModified))
+    date.getOrElse(new DateTime(0))
+  }
 
 }
