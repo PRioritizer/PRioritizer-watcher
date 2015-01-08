@@ -48,8 +48,8 @@ class RabbitMQ(host: String, port: Int, username: String, password: String, queu
   private def wait(consumer: QueueingConsumer): Message = {
     // Wait for next message
     val delivery = consumer.nextDelivery()
-    val eventId = new String(delivery.getBody)
     acknowledge(delivery)
+    val eventId = new String(delivery.getBody)
     Message(eventId)
   }
 
