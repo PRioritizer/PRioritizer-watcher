@@ -64,6 +64,7 @@ class CommandLineRunner(repositories: String, command: String, output: PrintWrit
 
   private def getLatestUpdate(base: Base): DateTime = {
     val folder = new File(TaskSettings.output, base.owner)
+    if (folder == null || !folder.exists) return new DateTime(0)
     val files = folder.listFiles.toList.filter(f => f.getName.startsWith(base.repository + '.'))
     val date = files.headOption.map(f => new DateTime(f.lastModified))
     date.getOrElse(new DateTime(0))
