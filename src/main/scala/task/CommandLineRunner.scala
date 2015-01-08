@@ -6,6 +6,7 @@ import events.Event
 import org.joda.time.DateTime
 import pullrequest.Base
 import settings.TaskSettings
+import com.roundeights.hasher.Implicits._
 
 import scala.sys.process._
 
@@ -63,11 +64,19 @@ class CommandLineRunner(repositories: String, command: String, output: PrintWrit
     new File(new File(repositories, base.owner.toLowerCase), base.repository.toLowerCase + ".git")
 
   private def getLatestUpdate(base: Base): DateTime = {
-    val folder = new File(TaskSettings.output, base.owner)
-    if (folder == null || !folder.exists) return new DateTime(0)
-    val files = folder.listFiles.toList.filter(f => f.getName.startsWith(base.repository + '.'))
-    val date = files.headOption.map(f => new DateTime(f.lastModified))
-    date.getOrElse(new DateTime(0))
+    val file = new File(new File(TaskSettings.output, base.owner), getHash(base) + ".json")
+    if (file == null || !file.exists)
+      return new DateTime(0)
+    new DateTime(file.lastModified)
+  }
+
+  private def getHash(base: Base) : String = {
+    val owner = base.owner.toLowerCase
+    val repo = base.repository.toLowerCase
+    val salt = "Analyz3r"
+    val value = salt + owner + '/' + repo
+    val hash = value.sha256.hex
+    hash.substring(0, 10)
   }
 
 }
