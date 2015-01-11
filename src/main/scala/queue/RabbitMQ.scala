@@ -40,8 +40,8 @@ class RabbitMQ(host: String, port: Int, username: String, password: String, queu
     channel = connection.createChannel
     channel.queueDeclare(queue, true, false, false, null)
     val consumer = new QueueingConsumer(channel)
-    channel.basicConsume(queue, false, consumer)
     channel.basicQos(1)
+    channel.basicConsume(queue, false, consumer)
     consumer
   }
 
