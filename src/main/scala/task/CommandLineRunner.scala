@@ -64,7 +64,7 @@ class CommandLineRunner(repositories: String, command: String, output: PrintWrit
     new File(new File(repositories, base.owner.toLowerCase), base.repository.toLowerCase + ".git")
 
   private def getLatestUpdate(base: Base): DateTime = {
-    val file = new File(new File(TaskSettings.output, base.owner), getHash(base) + ".json")
+    val file = new File(new File(TaskSettings.output, base.owner.toLowerCase), getHash(base) + ".json")
     if (file == null || !file.exists)
       return new DateTime(0)
     new DateTime(file.lastModified)
