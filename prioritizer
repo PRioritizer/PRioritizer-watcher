@@ -1,0 +1,42 @@
+#!/bin/bash
+
+NAME="PRioritizer"
+SCREEN="prioritizer"
+CMD="~/watcher/run"
+BUFFER=10000
+
+case "$1" in
+  start)
+    if ! screen -ls | grep -q "$SCREEN"; then
+      echo -n "Starting $NAME... "
+      screen -dmS $SCREEN -h $BUFFER
+      screen -S $SCREEN -X stuff "$CMD"$(printf \\r)
+      echo "done"
+    else
+      echo "$NAME is already running!"
+    fi
+    ;;
+  stop)
+    if ! screen -ls | grep -q "$SCREEN"; then
+      echo "$NAME is not running!"
+    else
+      echo -n "Stopping $NAME... "
+      screen -S $SCREEN -X kill
+      echo "done"
+    fi
+    ;;
+  attach)
+    if ! screen -ls | grep -q "$SCREEN"; then
+      echo "$NAME is not running!"
+    else
+      echo "Attaching to $NAME screen..."
+      echo "(Press Ctrl+A, D to detach)"
+      screen -S $SCREEN -r
+      echo "Detached"
+    fi
+    ;;
+  *)
+    echo "Usage: $0 start|stop|attach"
+    exit 1
+    ;;
+esac
